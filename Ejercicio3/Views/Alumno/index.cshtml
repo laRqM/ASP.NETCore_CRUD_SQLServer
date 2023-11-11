@@ -1,0 +1,129 @@
+@model List<Persona>
+
+@{
+	ViewData["Title"] = "Listado de alumnos";
+	var decrypt = new Encriptacion();
+}
+	<div class="row pb-2">
+		<div class="col-md-12">
+			<div class="d-flex justify-content-end">
+				<a class="btn btn-info" href="@Url.Action("add", "Alumno")"><i class="bi bi-plus-square"></i> Agregar Alumno</a>
+			</div><!-- d-flex justify-content-end -->
+		</div><!-- col-md-12 -->
+	</div><!-- row pb-2 -->
+	<div class="row pb-2">
+		<div class="col-8">
+			<h1>Alumnos</h1>
+		</div><!-- col-8 -->
+		<div class="col-4">
+			<form class="d-flex flex-fill" role="search">
+	            <input class="form-control" id="search" type="search" placeholder="Buscar..." aria-label="Buscar...">
+	        </form>
+		</div><!-- col-4 -->
+	</div><!-- row pb-2 -->
+<div class="col-md-12">
+	<div class="table-responsive">
+		<table class="table table-hover table-light table-striped">
+			<thead>
+			<tr>
+				<th scope="col">Identificador</th>
+				<th scope="col">Primer Nombre</th>
+				<th scope="col">Segundo Nombre</th>
+				<th scope="col">Apellido Paterno</th>
+				<th scope="col">Apellido Materno</th>
+				<th scope="col">Fecha de Nacimiento</th>
+				<th scope="col">Matrícula</th>
+				<th scope="col">Carrera</th>
+				<th scope="col">Semestre</th>
+				<th scope="col">Especialidad</th>
+				<th scope="col">Acciones</th>
+			</tr>
+			</thead>
+			<tbody class="table-group-divider align-middle" id="tbodyAlumno">
+			@foreach(var alumno in Model)
+			{
+				var desencriptado = decrypt.Desencriptar(alumno.NombreUno);
+				<tr>
+					<th scope="row">@Html.DisplayFor(m => alumno.IdPersona)</th>
+					<td>@Html.DisplayFor(m => desencriptado)</td>
+					<td>@Html.DisplayFor(m => alumno.NombreDos)</td>
+					<td>@Html.DisplayFor(m => alumno.ApellidoUno)</td>
+					<td>@Html.DisplayFor(m => alumno.ApellidoDos)</td>
+					<td>@Html.DisplayFor(m => alumno.DNacimiento)</td>
+					<td>@Html.DisplayFor(m => alumno.Alumno!.Matricula)</td>
+					<td>@Html.DisplayFor(m => alumno.Alumno!.Carrera)</td>
+					<td>@Html.DisplayFor(m => alumno.Alumno!.Semestre)</td>
+					<td>@Html.DisplayFor(m => alumno.Alumno!.Especialidad)</td>
+					<td>
+						<div class="btn-group" role="group" aria-label="Basic example">
+							<button type="button" class="btn btn-success btn-sm" onclick="location.href='@Url.Action("Edit", "Alumno", new { id = alumno.IdPersona })'">Actualizar</button>
+							<button type="button" class="btn btn-outline-danger btn-sm">Eliminar</button>
+						</div>
+					</td>
+				</tr>
+			}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="confirmDeleteModal">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Confirmar Eliminación</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true"></span>
+				</button>
+			</div>
+			<div class="modal-body">
+				¿Está seguro de que desea eliminar este registro?
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancelar</button>
+				<button type="button" class="btn btn-danger" id="confirmDeleteButton">Eliminar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script>
+        $(document).ready(function () {
+            $(".btn-outline-danger").click(function () {
+                var id = $(this).closest("tr").find("th").text(); // Obtenemos el ID del registro.
+                $("#confirmDeleteModal").modal("show"); // Mostramos el modal de confirmación.
+
+                $("#confirmDeleteButton").click(function () {
+                    $.ajax({
+                        url: "/Alumno/Delete/" + id,
+                        type: "POST",
+                        success: function (data) {
+                            location.reload(); // Recargamos la página para actualizar la tabla.
+                        }
+                    });
+
+                    $("#confirmDeleteModal").modal("hide"); // Cerramos el modal.
+                });
+            });
+        });
+    </script>
+	<script>
+		var $rows = $('#tbodyAlumno tr');
+		$('#search').keyup(function() {
+			var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
+			
+			// $(this).val(): Accede al valor del campo de entrada search.
+			// $.trim(...): Elimina espacios en blanco al principio y al final del valor.
+			// .replace(/ +/g, ' '): Reemplaza múltiples espacios en blanco por un solo espacio.
+			// .toLowerCase(): Convierte el valor resultante a minúsculas.
+			
+			$rows.show().filter(function() {
+				// .show(): Muestra todas las filas al principio.
+				// .filter(function() { ... }): Filtra las filas que no coinciden con el valor de búsqueda.
+				var text = $(this).text().replace(/\s+/g, ' ').toLowerCase(); // Captura el texto de la fila actual en minúsculas después de reemplazar múltiples espacios en blanco por un solo espacio.
+				return !~text.indexOf(val); // Se verifica si el valor val no está presente en el texto de la fila actual. El operador ~ se utiliza para comprobar si val no está presente en el texto. Si es cierto (no está presente), la fila se oculta; de lo contrario, se muestra.
+			}).hide(); // .hide(): Oculta las filas que no coinciden.
+		});
+	</script>
+}

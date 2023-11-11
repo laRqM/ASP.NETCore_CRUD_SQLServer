@@ -1,0 +1,123 @@
+@model List<Persona>
+
+@{
+	ViewData["Title"] = "Listado de instructores";
+	var decrypt = new Encriptacion();
+}
+	<div class="row pb-2">
+    	<div class="col-md-12">
+    		<div class="d-flex justify-content-end">
+			    <a class="btn btn-info" href="@Url.Action("add", "Instructor")"><i class="bi bi-plus-square"></i> Agregar Instructor</a>
+			</div><!-- d-flex justify-content-end -->
+		</div><!-- col-md-12 -->
+    </div><!-- row pb-2 -->
+	<div class="row pb-2">
+		<div class="col-8">
+			<h1>Instructores</h1>
+		</div><!-- col-8 -->
+		<div class="col-4">
+			<form class="d-flex flex-fill" role="search">
+				<input class="form-control" id="search" type="search" placeholder="Buscar..." aria-label="Buscar...">
+			</form>
+    	</div><!-- col-4 -->
+    </div><!-- row pb-2 -->
+	<div class="col-md-12">
+		<div class="table-responsive">
+			<table class="table table-hover table-light table-striped">
+				<thead>
+				<tr>
+					<th scope="col">Identificador</th>
+					<th scope="col">Primer Nombre</th>
+					<th scope="col">Segundo Nombre</th>
+					<th scope="col">Apellido Paterno</th>
+					<th scope="col">Apellido Materno</th>
+					<th scope="col">Fecha de Nacimiento</th>
+					<th scope="col">Folio</th>
+					<th scope="col">Acciones</th>
+				</tr>
+				</thead>
+				<tbody class="table-group-divider align-middle" id="tbodyInstructor">
+				@foreach (var instructor in Model)
+				{
+					var desencriptado = decrypt.Desencriptar(instructor.NombreUno);
+					<tr>
+						<th scope="row">@Html.DisplayFor(m => instructor.IdPersona)</th>
+						<td>@Html.DisplayFor(m => desencriptado)</td>
+						<td>@Html.DisplayFor(m => instructor.NombreDos)</td>
+						<td>@Html.DisplayFor(m => instructor.ApellidoUno)</td>
+						<td>@Html.DisplayFor(m => instructor.ApellidoDos)</td>
+						<td>@Html.DisplayFor(m => instructor.DNacimiento)</td>
+						<td>@Html.DisplayFor(m => instructor.Instructor!.Folio)</td>
+						<td>
+							<div class="btn-group" role="group" aria-label="Basic example">
+								<button type="button" class="btn btn-success btn-sm" onclick="location.href='@Url.Action("Edit", "Instructor", new { id = instructor.IdPersona })'">Actualizar</button>
+								<button type="button" class="btn btn-outline-danger btn-sm">Eliminar</button>
+							</div>
+						</td>
+					</tr>
+				}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	
+<div class="modal" tabindex="-1" role="dialog" id="confirmDeleteModal">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">Confirmar Eliminación</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true"></span>
+				</button>
+			</div>
+			<div class="modal-body">
+				¿Está seguro de que desea eliminar este registro?
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancelar</button>
+				<button type="button" class="btn btn-danger" id="confirmDeleteButton">Eliminar</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section scripts {
+	<script>
+        $(document).ready(function () {
+            $(".btn-outline-danger").click(function () {
+                var id = $(this).closest("tr").find("th").text(); // Obtenemos el ID del registro.
+                $("#confirmDeleteModal").modal("show"); // Mostramos el modal de confirmación.
+
+                $("#confirmDeleteButton").click(function () { // Al dar clic al botón con ID confirmDeleteButton...
+                    $.ajax({ // Ejecutamos una función AJAX.
+                        url: "/Instructor/Delete/" + id, // La URL a la que apuntamos será la creada en el controlador.
+                        type: "POST", // La solicitud será de tipo POST.
+                        success: function (data) { // Si la consulta es exitosa...
+                            location.reload(); // Recargamos la página para actualizar la tabla.
+                        }
+                    });
+
+                    $("#confirmDeleteModal").modal("hide"); // Cerramos el modal.
+                });
+            });
+        });
+    </script>
+	<script>
+		var $rows = $('#tbodyInstructor tr'); // Seleccionamos todas las filas(<tr>) de la tabla HTML con ID #tbodyInstructor
+    	$('#search').keyup(function() { // Le añadimos un controlador de eventos al elemento con el ID search. El controlador de eventos se dispara cuando se suelta una tecla en el campo de entrada con ID search.
+    		var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase(); // Se captura el valor del campo de entrada search.
+    		
+    		// $(this).val(): Accede al valor del campo de entrada search.
+    		// $.trim(...): Elimina espacios en blanco al principio y al final del valor.
+    		// .replace(/ +/g, ' '): Reemplaza múltiples espacios en blanco por un solo espacio.
+    		// .toLowerCase(): Convierte el valor resultante a minúsculas.
+    			
+    		$rows.show().filter(function() { // Esto oculta o muestra las filas de la tabla según el valor de búsqueda val.
+				// .show(): Muestra todas las filas al principio.
+				// .filter(function() { ... }): Filtra las filas que no coinciden con el valor de búsqueda.
+    			var text = $(this).text().replace(/\s+/g, ' ').toLowerCase(); // Captura el texto de la fila actual en minúsculas después de reemplazar múltiples espacios en blanco por un solo espacio.
+    			return !~text.indexOf(val); // Se verifica si el valor val no está presente en el texto de la fila actual. El operador ~ se utiliza para comprobar si val no está presente en el texto. Si es cierto (no está presente), la fila se oculta; de lo contrario, se muestra.
+    		}).hide(); // .hide(): Oculta las filas que no coinciden.
+    	});
+    </script>
+}

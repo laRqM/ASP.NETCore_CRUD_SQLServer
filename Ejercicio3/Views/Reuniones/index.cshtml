@@ -1,0 +1,74 @@
+@using Ejercicio3.Models.ViewModels
+@model List<AlumnoReunionView>
+
+@{
+	ViewData["Title"] = "Listado de asistentes a reuniones agendadas";
+	var decrypt = new Encriptacion();
+}
+
+<div class="row pb-2">
+	<div class="col-md-12">
+		<div class="d-flex justify-content-end">
+			<button class="btn btn-info" disabled><i class="bi bi-plus-square"></i> Agendar Reunión</button>
+		</div><!-- d-flex justify-content-end -->
+	</div><!-- col-md-12 -->
+</div><!-- row pb-2 -->
+<div class="row pb-2">
+	<div class="col-8">
+		<h1>Asistentes a Reuniones Agendadas</h1>
+	</div><!-- col-8 -->
+	<div class="col-4">
+		<form class="d-flex flex-fill" role="search">
+			<input class="form-control" type="search" placeholder="Buscar..." aria-label="Buscar...">
+	    </form>
+	</div><!-- col-4 -->
+</div><!-- row pb-2 -->
+<div class="col-md-12">
+	<div class="table-responsive">
+		<table class="table table-hover table-light table-striped">
+			<thead>
+			<tr>
+				<th scope="row">Identificador</th>
+				<th scope="row">Primer Nombre</th>
+				<th scope="row">Segundo Nombre</th>
+				<th scope="row">Apellido Paterno</th>
+				<th scope="row">Apellido Materno</th>
+				<th scope="row">Fecha de Nacimiento</th>
+				<th scope="row">Matrícula</th>
+				<th scope="row">Carrera</th>
+				<th scope="row">Semestre</th>
+				<th scope="row">Especialidad</th>
+				<th scope="row">ID Reunión</th>
+				<th scope="row">Fecha</th>
+				<th scope="row">Hora</th>
+				<th scope="row">Lugar</th>
+				<th scope="row">Tema</th>
+			</tr>
+			</thead>
+			<tbody class="table-group-divider align-middle">
+			@if (Model != null) {
+				@foreach (var item in Model) {
+					var desencriptado = decrypt.Desencriptar(item.nombre_uno);
+					<tr>
+						<td>@Html.DisplayFor(m => item.id_persona)</td>
+						<td>@Html.DisplayFor(m => desencriptado)</td>
+						<td>@Html.DisplayFor(m => item.nombre_dos)</td>
+						<td>@Html.DisplayFor(m => item.apellido_uno)</td>
+						<td>@Html.DisplayFor(m => item.apellido_dos)</td>
+						<td>@Html.DisplayFor(m => item.D_nacimiento)</td>
+						<td>@Html.DisplayFor(m => item.matricula)</td>
+						<td>@Html.DisplayFor(m => item.carrera)</td>
+						<td>@Html.DisplayFor(m => item.semestre)</td>
+						<td>@Html.DisplayFor(m => item.especialidad)</td>
+						<td>@Html.DisplayFor(m => item.id_reunion)</td>
+						<td>@Html.DisplayFor(m => item.fecha)</td>
+						<td>@Html.DisplayFor(m => item.hora)</td>
+						<td>@Html.DisplayFor(m => item.lugar)</td>
+						<td>@Html.DisplayFor(m => item.tema)</td>
+					</tr>
+				}
+			}
+			</tbody>
+		</table>
+	</div>
+</div>
